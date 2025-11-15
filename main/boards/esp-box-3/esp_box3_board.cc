@@ -7,6 +7,7 @@
 #include "application.h"
 #include "button.h"
 #include "config.h"
+#include "led_control_mcp_tool.h"
 
 #include <esp_log.h>
 #include <esp_lcd_panel_vendor.h>
@@ -42,6 +43,7 @@ private:
     i2c_master_bus_handle_t i2c_bus_;
     Button boot_button_;
     Display* display_;
+    LedControlMcpTool led_control_tool_;
 
     void InitializeI2c() {
         // Initialize I2C peripheral
@@ -120,7 +122,7 @@ private:
         panel_config.bits_per_pixel = 16;
         panel_config.vendor_config = (void *)&vendor_config;
         ESP_ERROR_CHECK(esp_lcd_new_panel_ili9341(panel_io, &panel_config, &panel));
-        
+
         esp_lcd_panel_reset(panel);
         esp_lcd_panel_init(panel);
         esp_lcd_panel_invert_color(panel, DISPLAY_BACKLIGHT_OUTPUT_INVERT);
@@ -136,28 +138,33 @@ private:
 #endif
     }
 
+    void InitializeTools() {
+        led_control_tool_.RegisterTools(McpServer::GetInstance());
+    }
+
 public:
-    EspBox3Board() : boot_button_(BOOT_BUTTON_GPIO) {
+    EspBox3Board() : boot_button_(BOOT_BUTTON_GPIO), led_control_tool_(GPIO_NUM_39, GPIO_NUM_40, GPIO_NUM_41) {
         InitializeI2c();
         InitializeSpi();
         InitializeIli9341Display();
         InitializeButtons();
         GetBacklight()->RestoreBrightness();
+        InitializeTools();
     }
 
     virtual AudioCodec* GetAudioCodec() override {
         static BoxAudioCodec audio_codec(
-            i2c_bus_, 
-            AUDIO_INPUT_SAMPLE_RATE, 
+            i2c_bus_,
+            AUDIO_INPUT_SAMPLE_RATE,
             AUDIO_OUTPUT_SAMPLE_RATE,
-            AUDIO_I2S_GPIO_MCLK, 
-            AUDIO_I2S_GPIO_BCLK, 
-            AUDIO_I2S_GPIO_WS, 
-            AUDIO_I2S_GPIO_DOUT, 
+            AUDIO_I2S_GPIO_MCLK,
+            AUDIO_I2S_GPIO_BCLK,
+            AUDIO_I2S_GPIO_WS,
+            AUDIO_I2S_GPIO_DOUT,
             AUDIO_I2S_GPIO_DIN,
-            AUDIO_CODEC_PA_PIN, 
-            AUDIO_CODEC_ES8311_ADDR, 
-            AUDIO_CODEC_ES7210_ADDR, 
+            AUDIO_CODEC_PA_PIN,
+            AUDIO_CODEC_ES8311_ADDR,
+            AUDIO_CODEC_ES7210_ADDR,
             AUDIO_INPUT_REFERENCE);
         return &audio_codec;
     }
