@@ -42,6 +42,7 @@ set(INCLUDE_DIRS "." "display" "display/lvgl_display" "display/lvgl_display/jpg"
 # Add board common files
 file(GLOB BOARD_COMMON_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/boards/common/*.cc)
 list(APPEND SOURCES ${BOARD_COMMON_SOURCES})
+list(APPEND SOURCES "boards/common/led_control_mcp_tool.cc")
 list(APPEND INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/boards/common)
 
 idf_build_get_property(build_components BUILD_COMPONENTS)
